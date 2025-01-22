@@ -1,0 +1,100 @@
+const express = require('express');
+const path = require('path');
+const fs = require('fs');
+const { name } = require('commander');
+const app = express();
+
+app.set('view engine', 'ejs');
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+
+app.get('/', (req, res) => {
+
+    const currentDate = new Date();    
+    const day = String(currentDate.getDate()).padStart(2, '0'); 
+    const month = String(currentDate.getMonth() + 1).padStart(2, '0'); 
+    const year = String(currentDate.getFullYear()).slice(-2); 
+
+    const formattedDate = `${day}-${month}-${year}`;
+
+
+
+    fs.readdir('./Files', 'utf8', (err, file) => {
+        if (err) return res.status(500).send('Something went wrong');
+        res.render('index', { files: file, date: formattedDate});
+    });
+
+})
+
+app.get('/create', (req, res) => {
+    res.render('create');
+})
+
+app.post('/addHisab', (req,res) => {
+    const {name,description} = req.body;
+
+    fs.writeFile(`./Files/${name}.txt`, description, (err) => {
+        if (err) return res.status(500).send('Something went wrong');
+        res.redirect('/');
+
+    });
+});
+
+app.get('/edit/:name', (req,res) => {
+    const {name} = req.params;
+
+    fs.readFile(`./Files/${name}`, 'utf8', (err,data) => {
+        if(err) return res.status(500).send("Something went wrong");
+        res.render('edit', {name, description: data});
+    })
+
+}) 
+
+app.post('/saveChanges/:name', (req,res) => {
+
+    const {name} = req.params;
+    const {data} = req.body;
+
+    fs.writeFile(`./Files/${name}`, data, (err) => {
+        if(err) return res.status(500).send("Something went wrong");
+        res.redirect('/');
+    })
+});
+
+app.get(`/delete/:name`, (req,res) => {
+    const {name} = req.params;
+
+    fs.unlink(`./Files/${name}`, (err) => {
+        if(err) return res.status(500).send("Something went wrong");
+        res.redirect('/');
+    })
+})
+
+app.get(`/view/:name`, (req,res) => {
+
+    const {name} = req.params;
+
+    fs.readFile(`./Files/${name}`, 'utf8', (err,data) => {
+        if(err) return res.status(500).send("Something went wrong");
+        res.render('hisab', {name, description: data});
+    })
+  
+})
+
+app.get('/edit/:name', (req,res) => {
+    const {name} = req.params;
+
+    fs.readFile(`./Files/${name}`, 'utf8', (err,data) => {
+        if(err) return res.status(500).send("Something went wrong");
+        res.render('edit', {name, description: data});
+    })
+
+})
+
+
+
+app.listen(3000, () => {
+    console.log('Server is running on port 3000');
+})

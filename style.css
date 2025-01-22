@@ -1,0 +1,16 @@
+.Hisab-Card{
+    display: flex;
+    flex-direction: column;
+    color: blue;
+}
+
+.ii{
+    height: 11px;
+    width: 11px;
+    background-color: #4CAF50;
+}
+
+.card-link{
+    text-decoration: none;
+    color: black;
+}
