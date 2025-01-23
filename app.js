@@ -2,12 +2,87 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const { name } = require('commander');
+const connect = require('./Config/connect');
+const Register = require('./Moduls/register');
+const session = require('express-session');
+const flash = require('connect-flash');
 const app = express();
 
 app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use(session({
+    secret: "this is my secret",
+    resave: false,
+    saveUninitialized: true
+}))
+app.use(flash());
+
+
+// app.get("/count", (req,res) => {
+
+//     if(req.session.count){
+//         req.session.count++;
+//     }else{
+//         req.session.count = 1;
+//     }
+
+//     res.send(`Count: ${req.session.count}`);
+// })
+
+app.get('/login' , (req,res) => {   
+    res.render('login');
+})
+
+app.get('/register', (req,res) => { 
+    res.render('register');
+})
+
+app.post('/registerUser', async(req,res) => {
+
+    const {fullName,email,password,confirmPassword} = req.body;
+
+    if(password != confirmPassword) {
+        return res.status(400).send('Password does not match');
+    }
+
+    const user = Register({
+        fullName,
+        email,
+        password,
+        confirmPassword
+    });
+
+    await user.save();
+    // req.flash('success', 'You are registered successfully');
+    res.render('login');
+})
+
+app.post('/loginUser', async(req,res) => {
+    const {email,password} = req.body;
+
+    const user = await Register.findOne({email: email})
+        .then((user) => {
+            if(user.password == password) {
+                res.redirect('/');
+            }else{
+                res.status(400).send('Invalid Credentials');
+            }
+        })
+        .catch((err) => {
+            res.status(400).send('email not found');
+        })
+})
+
+app.get('/temsCondition.ejs', (req,res) => {
+    res.render('temsCondition');
+});
+
+app.get('/forgotPass', (req,res) => { 
+    res.render('forgotPass');
+})
 
 
 app.get('/', (req, res) => {
