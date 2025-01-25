@@ -14,12 +14,27 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(session({
-    secret: "this is my secret",
+    secret: "thisismysecret",
     resave: false,
-    saveUninitialized: true
+    saveUninitialized: true,
+    cookie: {
+        maxAge: 24 * 60 * 60 * 1000,
+        expires: Date.now() + 24 * 60 * 60 * 1000,
+        httpOnly: true
+    }
 }))
 app.use(flash());
 
+app.use((req,res,next) => {
+    
+    res.locals.userNotFound = req.flash('userNotFound');
+    res.locals.invalidPass = req.flash('invalidPass');
+    // res.locals.message = req.flash('loginScc');
+    res.locals.passwordMatch = req.flash('passwordMatch');
+    res.locals.emailExist = req.flash('emailExist');
+    res.locals.success = req.flash("success");
+    next();
+})
 
 // app.get("/count", (req,res) => {
 
@@ -32,58 +47,10 @@ app.use(flash());
 //     res.send(`Count: ${req.session.count}`);
 // })
 
-app.get('/login' , (req,res) => {   
-    res.render('login');
-})
-
-app.get('/register', (req,res) => { 
-    res.render('register');
-})
-
-app.post('/registerUser', async(req,res) => {
-
-    const {fullName,email,password,confirmPassword} = req.body;
-
-    if(password != confirmPassword) {
-        return res.status(400).send('Password does not match');
-    }
-
-    const user = Register({
-        fullName,
-        email,
-        password,
-        confirmPassword
-    });
-
-    await user.save();
-    // req.flash('success', 'You are registered successfully');
-    res.render('login');
-})
-
-app.post('/loginUser', async(req,res) => {
-    const {email,password} = req.body;
-
-    const user = await Register.findOne({email: email})
-        .then((user) => {
-            if(user.password == password) {
-                res.redirect('/');
-            }else{
-                res.status(400).send('Invalid Credentials');
-            }
-        })
-        .catch((err) => {
-            res.status(400).send('email not found');
-        })
-})
-
-app.get('/temsCondition.ejs', (req,res) => {
-    res.render('temsCondition');
-});
-
-app.get('/forgotPass', (req,res) => { 
-    res.render('forgotPass');
-})
-
+// app.get('/deleteData', async (req, res) => {
+//     let data = await Register.deleteMany({});
+//     res.send(data);
+// })
 
 app.get('/', (req, res) => {
 
@@ -98,9 +65,70 @@ app.get('/', (req, res) => {
 
     fs.readdir('./Files', 'utf8', (err, file) => {
         if (err) return res.status(500).send('Something went wrong');
-        res.render('index', { files: file, date: formattedDate});
+        res.render('index', { files: file, date: formattedDate, ...res.locals });
     });
 
+})
+
+app.get('/login' , (req,res) => {   
+    res.render('login');
+})
+
+app.post('/loginUser', async(req,res) => {
+
+    const {email,password} = req.body;
+    const user = await Register.findOne({email: email})
+        .then((user) => {
+            if(user.password == password) {  
+                req.flash('loginScc', 'Login Successfully');
+                res.redirect('/');
+            }else{
+                req.flash('invalidPass', 'Invalid Password');
+                res.redirect('/login');
+            }
+        })
+        .catch((err) => {
+            req.flash('userNotFound', 'User not found');
+            res.redirect('/login');
+        })
+})
+
+app.get('/register', (req,res) => { 
+    res.render('register');
+})
+
+app.post('/registerUser', async(req,res) => {
+
+    const {fullName,email,password,confirmPassword} = req.body;
+    const emailExist = await Register.findOne({ email : email})
+
+    if(emailExist){
+        req.flash('emailExist', 'user already exist');
+        res.render('register');
+    }else if(password != confirmPassword) {
+        req.flash('passwordMatch', 'Password does not match');
+        res.render('register');
+    }else{
+        const user = Register({
+            fullName,
+            email,
+            password,
+            confirmPassword
+        });
+        await user.save();
+        req.flash('success', 'You are registered successfully');
+        res.render('login');
+    } 
+})
+
+
+
+app.get('/temsCondition.ejs', (req,res) => {
+    res.render('temsCondition');
+});
+
+app.get('/forgotPass', (req,res) => { 
+    res.render('forgotPass');
 })
 
 app.get('/create', (req, res) => {
