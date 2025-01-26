@@ -7,9 +7,7 @@ const connect = require('../Config/connect');
 
 const registerSchema = mongoose.Schema({
     fullName: String,
-    email: String,
-    password: String,
-    confirmPassword: String
+    // username and password are added by passport-local-mongoose automatically
 });
 
 registerSchema.plugin(passportLocalMongoose);

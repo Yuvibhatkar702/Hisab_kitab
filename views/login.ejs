@@ -13,28 +13,18 @@
     <div class="container d-flex justify-content-center align-items-center vh-100">
         <div class="card shadow p-4" style="width: 22rem;">
             <h3 class="text-center mb-4">Login</h3>
+            
             <% if(success && success.length) { %>
                 <p class="text-center mb-4" style="color: blue;">
                     <%= success %>
+                    <%= req.session.success %>
                 </p>
-                <%} else if(userNotFound && userNotFound.length){ %>
-                    <p class="text-center mb-4" style="color: blue;">
-                        <%= userNotFound %>
-                    </p>
-                    <% }else if(invalidPass && invalidPass.length){%>
-                        <p class="text-center mb-4" style="color: blue;">
-                            <%= invalidPass %>
-                        </p>
-                        <% }else if(success && success.length){%>
-                            <p class="text-center mb-4" style="color: blue;">
-                                <%= success %>
-                            </p>
-                            <% } %>
-
+                <%}%>
+                
                                 <form action="/loginUser" method="POST">
                                     <div class="mb-3">
-                                        <label for="email" class="form-label">Email address</label>
-                                        <input type="email" class="form-control" name="email"
+                                        <label for="username" class="form-label">Email address</label>
+                                        <input type="text" class="form-control" name="username"
                                             placeholder="Enter your email" required>
                                     </div>
                                     <div class="mb-3">
