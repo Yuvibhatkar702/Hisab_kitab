@@ -6,6 +6,8 @@ const connect = require('./Config/connect');
 const Register = require('./Moduls/register');
 const session = require('express-session');
 const flash = require('connect-flash');
+const passport = require('passport');
+const localStatergy = require('passport-local');
 const app = express();
 
 app.set('view engine', 'ejs');
@@ -24,6 +26,15 @@ app.use(session({
     }
 }))
 app.use(flash());
+
+// paasport (login page)
+// app.use(passport.initialize());
+// app.use(passport.session());
+// app.use(new localStatergy(Register.authenticate()));
+
+// passport.serializeUser(Register.serializeUser());
+// passport.deserializeUser(Register.deserializeUser());
+
 
 app.use((req,res,next) => {
     res.locals.userNotFound = req.flash('userNotFound');

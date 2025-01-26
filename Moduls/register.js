@@ -1,6 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
-// const passportLocalMongoose = require('passport-local-mongoose');
+const passportLocalMongoose = require('passport-local-mongoose');
 
 
 const connect = require('../Config/connect');
@@ -12,7 +12,7 @@ const registerSchema = mongoose.Schema({
     confirmPassword: String
 });
 
-// registerSchema.plugin(passportLocalMongoose);
+registerSchema.plugin(passportLocalMongoose);
 
 const Register = mongoose.model('Register', registerSchema);
 
