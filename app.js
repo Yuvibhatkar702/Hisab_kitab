@@ -26,10 +26,9 @@ app.use(session({
 app.use(flash());
 
 app.use((req,res,next) => {
-    
     res.locals.userNotFound = req.flash('userNotFound');
     res.locals.invalidPass = req.flash('invalidPass');
-    // res.locals.message = req.flash('loginScc');
+    res.locals.message = req.flash('loginScc');
     res.locals.passwordMatch = req.flash('passwordMatch');
     res.locals.emailExist = req.flash('emailExist');
     res.locals.success = req.flash("success");
@@ -102,12 +101,14 @@ app.post('/registerUser', async(req,res) => {
     const {fullName,email,password,confirmPassword} = req.body;
     const emailExist = await Register.findOne({ email : email})
 
+    
+
     if(emailExist){
         req.flash('emailExist', 'user already exist');
-        res.render('register');
+        res.render('register', {emailExist: req.flash('emailExist')});
     }else if(password != confirmPassword) {
         req.flash('passwordMatch', 'Password does not match');
-        res.render('register');
+        res.render('register',{passwordMatch: req.flash('passwordMatch')});
     }else{
         const user = Register({
             fullName,
@@ -117,7 +118,7 @@ app.post('/registerUser', async(req,res) => {
         });
         await user.save();
         req.flash('success', 'You are registered successfully');
-        res.render('login');
+        res.render('login', {success: req.flash('success')});   
     } 
 })
 
